@@ -5,13 +5,12 @@ all_vacancy_spec_for_resume AS (
 		LEFT JOIN vacancy USING (vacancy_id)
 		LEFT JOIN vacancy_body_specialization USING (vacancy_body_id)
 		GROUP BY resume_id, specialization_id),
-max_vacancy_spec_for_resume AS (
-	SELECT resume_id, MAX(count) FROM all_vacancy_spec_for_resume GROUP BY resume_id),
+
 most_frequent_vacancy_spec_for_resume AS (
-	SELECT resume_id, ARRAY_AGG(specialization_id) AS vacancy_spec FROM (
-		SELECT * FROM max_vacancy_spec_for_resume t1 LEFT JOIN all_vacancy_spec_for_resume t2 USING (resume_id)
-		WHERE t2.count = t1.max) T
-	GROUP BY resume_id),
+	SELECT DISTINCT ON (resume_id) resume_id, specialization_id AS vacancy_spec 
+	FROM all_vacancy_spec_for_resume 
+	ORDER BY resume_id, count),
+	
 all_resume_spec AS (
 	SELECT resume_id, ARRAY_AGG(specialization_id ORDER BY specialization_id) AS resume_spec FROM resume 
 	LEFT JOIN resume_specialization USING (resume_id)
